@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8" />
+<meta name="google" content="notranslate" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calculadora HTML – MOBIX</title>
+<style>
+  :root{ --bg:#000000; --fg:#f7fafc; --card:#15171b; --muted:#9aa3b2; --border:#2a2e36; --accent:#4ea8ff; --ok:#32d583; --warn:#ffd266; --shadow:0 10px 30px rgba(0,0,0,.35); }
+  *{box-sizing:border-box}
+  body{margin:0;background:#000000;color:var(--fg);font:15px/1.45 system-ui,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
+  .wrap{display:block;padding:0}
+  .app{width:100%;}
+  .card{background:#000000;border:1px solid #273241;border-radius:22px;box-shadow:0 18px 42px rgba(0,0,0,.38);padding:22px}
+  .hero{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:18px}
+  .hero-left{display:flex;align-items:center;gap:14px;min-width:0}
+  .hero-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:31px;background:linear-gradient(145deg,#19d7f2,#a855f7);box-shadow:0 0 24px rgba(25,215,242,.22);flex:0 0 auto}
+  .hero-text h1{font-size:28px;margin:0 0 4px;font-weight:850;letter-spacing:-.5px}
+  .hero-text h1 span{color:#19D7F2}
+  .hero-text .sub{color:#B7C2D0;margin:0;font-size:14px}
+  .hero-badge{display:flex;align-items:center;gap:10px;padding:10px 15px;border:1px solid #1d4a54;border-radius:999px;background:linear-gradient(135deg,rgba(25,215,242,.12),rgba(25,215,242,.05));white-space:nowrap}
+  .hero-badge .bolt{color:#19D7F2;font-size:24px}
+  .hero-badge strong{display:block;color:#19D7F2;font-size:13px}
+  .hero-badge small{display:block;color:#C9D3DF;font-size:11px;margin-top:1px}
+  .grid{display:grid;gap:16px}
+  .menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+  .tile{position:relative;display:grid;grid-template-columns:74px 1fr 46px;grid-template-areas:"icon body arrow" "tags tags tags";column-gap:16px;row-gap:14px;align-items:center;padding:22px;border:2px solid var(--tile-accent);border-radius:24px;background:linear-gradient(145deg,var(--tile-bg1),var(--tile-bg2));cursor:pointer;transition:transform .14s ease,box-shadow .18s ease,filter .18s ease;min-height:250px;overflow:hidden}
+  .tile::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 15% 10%,var(--tile-glow),transparent 42%);pointer-events:none}
+  .tile:hover{transform:translateY(-3px);box-shadow:0 14px 36px var(--tile-shadow);filter:brightness(1.04)}
+  .tile.cyan{--tile-accent:#19D7F2;--tile-bg1:#062631;--tile-bg2:#07131c;--tile-glow:rgba(25,215,242,.20);--tile-shadow:rgba(25,215,242,.18)}
+  .tile.purple{--tile-accent:#A855F7;--tile-bg1:#241037;--tile-bg2:#100c1d;--tile-glow:rgba(168,85,247,.22);--tile-shadow:rgba(168,85,247,.18)}
+  .tile.green{--tile-accent:#22C875;--tile-bg1:#073324;--tile-bg2:#071811;--tile-glow:rgba(34,200,117,.20);--tile-shadow:rgba(34,200,117,.18)}
+  .tile-icon{grid-area:icon;position:relative;width:74px;height:74px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:35px;border:1px solid rgba(255,255,255,.20);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 10px 26px rgba(0,0,0,.24)}
+  .cyan .tile-icon{background:linear-gradient(145deg,#19D7F2,#087f9d)}
+  .purple .tile-icon{background:linear-gradient(145deg,#B43BFF,#6D20A9)}
+  .green .tile-icon{background:linear-gradient(145deg,#2ED983,#0C8F56)}
+  .tile-body{grid-area:body;position:relative;align-self:center}
+  .tile-number{font-size:14px;font-weight:900;color:var(--tile-accent);letter-spacing:.8px;margin-bottom:7px}
+  .tile h3{margin:0 0 8px;font-size:24px;line-height:1.08;color:#FFFFFF;letter-spacing:-.3px}
+  .tile p{margin:0;color:#D0D8E3;font-size:14px;line-height:1.45}
+  .tile-arrow{grid-area:arrow;position:relative;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:29px;font-weight:300;color:#FFF;border:1px solid var(--tile-accent);background:rgba(255,255,255,.06);box-shadow:0 0 18px var(--tile-shadow)}
+  .tile-tags{grid-area:tags;position:relative;display:flex;flex-wrap:wrap;gap:8px;align-self:end}
+  .tag{font-size:11px;font-weight:700;padding:6px 11px;border-radius:999px;color:#DCE7F2;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.07)}
+  .back{margin-top:10px}
+  button{appearance:none;border:1px solid var(--border);background:#080808;color:var(--fg);border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
+  button:hover{background:#111111;border-color:#3b84ff}
+  .primary{background:linear-gradient(180deg,#5ab2ff,#4ea8ff);border-color:#438ee0;color:#06101f}
+  /* Mantener visible el botón Calcular de Precio de Venta al pasar el cursor, pulsarlo o enfocarlo. */
+  #pv_calc:hover,#pv_calc:focus,#pv_calc:active{background:linear-gradient(180deg,#5ab2ff,#4ea8ff);border-color:#438ee0;color:#06101f;opacity:1}
+  #pv_calc:focus-visible{outline:2px solid #8acaff;outline-offset:2px}
+  .row{display:grid;grid-template-columns:180px 1fr 160px;gap:10px;align-items:end}
+  label{display:block;font-size:13px;color:#dfe3ec;margin:4px 0 6px}
+  input,select{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:#050505;color:#f7fafc;outline:none}
+  input:focus,select:focus{border-color:#3b84ff;box-shadow:0 0 0 3px rgba(78,168,255,.14)}
+  .section{border:1px solid var(--border);border-radius:16px;padding:14px;background:#000000;margin-top:8px}
+  .table{display:grid;gap:8px}
+  .row2{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#050505}
+  .row2.destacado{border:2px solid #ff4040 !important;background:#101215 !important;}
+  .row2.destacado strong{color:#32d583 !important;font-weight:800;}
+  /* Agrupaciones de colores solo para Precio de Venta */
+  .pv-results{display:flex;flex-direction:column;gap:9px}
+  .pv-results .pv-group{border:2px solid #293445;border-radius:13px;background:#050505;overflow:hidden}
+  .pv-results .pv-group .row2{border:0;border-radius:0;background:transparent;margin:0;padding:12px 15px}
+  .pv-results .pv-group .row2+.row2{border-top:1px solid #293445}
+  .pv-results .pv-sugerido{border-color:#168cff;background:rgba(22,140,255,.10)}
+  .pv-results .pv-sugerido strong{color:#32d583;font-weight:800}
+  .pv-results .pv-evaluado{border-color:#a855f7;background:rgba(168,85,247,.07)}
+  .pv-results .pv-margenes{border-color:#facc15;background:rgba(250,204,21,.06)}
+  .hidden{display:none}
+
+/* ======= Responsive (móviles) ======= */
+@media (max-width: 520px){
+  .wrap{padding:8px 0 0 0}
+  .app{width:100vw}
+  .card{border-radius:18px;padding:14px}
+  .hero{align-items:flex-start;margin-bottom:14px}
+  .hero-left{gap:10px}
+  .hero-icon{width:46px;height:46px;border-radius:13px;font-size:25px}
+  .hero-text h1{font-size:19px;line-height:1.15}
+  .hero-text .sub{font-size:12px;line-height:1.35;margin-top:4px}
+  .hero-badge{display:none}
+
+  /* Menú en 1 columna y tiles más tocables */
+  .menu{grid-template-columns:1fr;gap:12px}
+  .tile{grid-template-columns:58px 1fr 38px;column-gap:11px;row-gap:10px;padding:14px;border-radius:18px;min-height:0}
+  .tile-icon{width:58px;height:58px;border-radius:16px;font-size:27px}
+  .tile h3{font-size:18px;margin-bottom:5px}
+  .tile p{font-size:12px;line-height:1.35}
+  .tile-number{font-size:12px;margin-bottom:4px}
+  .tile-arrow{width:38px;height:38px;font-size:23px}
+  .tile-tags{gap:5px}
+  .tag{font-size:10px;padding:4px 8px}
+
+  /* Filas de formulario: columna única en móvil */
+  .row{grid-template-columns:1fr !important; gap:8px}
+  .row label{font-size:12px}
+  input, select{padding:14px;border-radius:12px;font-size:16px}
+  button{width:100%;padding:14px 16px;border-radius:12px;font-size:16px}
+  .primary{min-height:44px}
+
+  /* Secciones y resultados */
+  .section{padding:12px;border-radius:14px}
+  .table{gap:10px}
+  .row2{padding:12px;border-radius:12px}
+  .row2 span{font-size:13px}
+  .row2 strong{font-size:18px}
+
+  /* KPI y tablas en una sola columna si existieran */
+  .kpis{grid-template-columns:1fr !important}
+
+  /* Evitar desbordes horizontales */
+  body, html{overflow-x:hidden}
+}
+
+
+    .tile-margin{
+      border-color:#ff9f1c !important;
+      background:linear-gradient(135deg,rgba(255,159,28,.18),rgba(255,159,28,.055)) !important;
+    }
+    .tile-margin .num{color:#ffb347 !important}
+    .tile-margin .go{border-color:#ff9f1c !important;color:#ffb347 !important}
+    .tile-margin .ico{background:linear-gradient(145deg,#ffb347,#ff7a18) !important}
+
+</style>
+</head>
+<body translate="no" class="notranslate">
+  <div class="wrap">
+    <div class="app">
+      <div class="card">
+        <div class="hero">
+          <div class="hero-left">
+            <div class="hero-icon">🧮</div>
+            <div class="hero-text">
+              <h1>Suite de Calculadoras – <span>Mobix</span></h1>
+              <p class="sub">Elige una calculadora. Todo en una sola página, sin recargar.</p>
+            </div>
+          </div>
+          <div class="hero-badge">
+            <div class="bolt">⚡</div>
+            <div><strong>Cálculos rápidos</strong><small>Para tu negocio</small></div>
+          </div>
+        </div>
+
+        <div id="menu" class="menu">
+          <div class="tile cyan" data-go="pv">
+            <div class="tile-icon">🏷️</div>
+            <div class="tile-body"><div class="tile-number">01</div><h3>Precio de Venta</h3><p>Desde costo → precio con IVA, utilidad, margen y markup.</p></div>
+            <div class="tile-arrow">→</div>
+            <div class="tile-tags"><span class="tag">Costo</span><span class="tag">IVA</span><span class="tag">Utilidad</span><span class="tag">Margen</span><span class="tag">Markup</span></div>
+          </div>
+          <div class="tile purple" data-go="iva">
+            <div class="tile-icon">📄</div>
+            <div class="tile-body"><div class="tile-number">02</div><h3>IVA Mensual</h3><p>Ventas (boleta/factura), compras y cálculo de IVA a pagar.</p></div>
+            <div class="tile-arrow">→</div>
+            <div class="tile-tags"><span class="tag">Ventas</span><span class="tag">Compras</span><span class="tag">Débito</span><span class="tag">Crédito</span><span class="tag">IVA a pagar</span></div>
+          </div>
+          <div class="tile green" data-go="reinv">
+            <div class="tile-icon">📦</div>
+            <div class="tile-body"><div class="tile-number">03</div><h3>Reinversión</h3><p>Define % de reinversión y ve cuánto stock puedes comprar.</p></div>
+            <div class="tile-arrow">→</div>
+            <div class="tile-tags"><span class="tag">% Reinversión</span><span class="tag">Stock</span><span class="tag">Inversión</span><span class="tag">Proyección</span></div>
+          </div>
+          <div class="tile-margin tile cyan" data-go="margen">
+            <div class="tile-icon">📊</div>
+            <div class="tile-body"><div class="tile-number">04</div><h3>Margen de Ganancia</h3><p>Compara precio de compra y precio de venta real.</p></div>
+            <div class="tile-arrow">→</div>
+            <div class="tile-tags"><span class="tag">Compra</span><span class="tag">Venta</span><span class="tag">Utilidad</span><span class="tag">Margen</span><span class="tag">Markup</span></div>
+          </div>
+        </div>
+
+        <!-- CALC: PRECIO DE VENTA -->
+        <div id="view-pv" class="hidden">
+          <button class="back" data-back>← Volver al menú</button>
+          <h2>Calculadora de Precio de Venta</h2>
+          <p class="sub">Calcula el precio por <b>ganancia sobre costo (markup)</b> o por <b>margen de venta deseado</b>. Incluye IVA del 19% y precio comercial terminado en $900.</p>
+          <div class="grid">
+            <div class="section">
+              <div class="row"><label>Costo sin IVA (opcional)</label><input id="pv_neto" type="text" inputmode="numeric" placeholder="Ej: 8.000"><div></div></div>
+              <div class="row" style="margin-top:10px"><label>Costo con IVA (opcional)</label><input id="pv_bruto" type="text" inputmode="numeric" placeholder="Ej: 9.520"><div></div></div>
+              <div class="row" style="margin-top:10px"><label>Tipo de cálculo</label><select id="pv_modo"><option value="markup">Ganancia sobre costo (markup)</option><option value="margen">Margen deseado sobre venta</option></select><div></div></div>
+              <div class="row" style="margin-top:10px"><label id="pv_pct_label">Ganancia sobre costo (%)</label><input id="pv_pct" type="number" inputmode="decimal" value="170" min="0" step="0.1"><button class="primary" id="pv_calc">Calcular</button></div>
+              <div class="row" style="margin-top:10px"><label>Precio de venta manual con IVA (opcional)</label><input id="pv_manual" type="text" inputmode="numeric" placeholder="Ej: 19.900"><div></div></div>
+              <p class="sub" style="margin-top:12px">El precio manual, si lo ingresas, se utiliza para evaluar tu precio real. El precio sugerido se calcula por separado y se redondea hacia arriba hasta terminar en $900.</p>
+            </div>
+            <div class="section out" id="pv_out" style="display:none">
+              <div id="pv_eval" style="margin-bottom:14px;padding:16px 18px;border:1px solid #344152;border-radius:14px;background:#0e141c">
+                <div style="display:flex;justify-content:space-between;gap:14px;align-items:center">
+                  <strong style="font-size:17px">📊 Evaluación comercial</strong>
+                  <strong id="pv_eval_badge" style="padding:7px 11px;border-radius:999px">—</strong>
+                </div>
+                <div id="pv_eval_text" style="margin-top:8px;color:#aeb8c7;font-size:13px;line-height:1.45">—</div>
+              </div>
+              <div class="table pv-results">
+                <div class="pv-group pv-costos">
+                  <div class="row2"><span>💰 Costo sin IVA</span><strong id="pv_o_neto">—</strong></div>
+                  <div class="row2"><span>🧾 IVA (19%) sobre costo</span><strong id="pv_o_ivac">—</strong></div>
+                  <div class="row2"><span>💳 Costo con IVA</span><strong id="pv_o_bruto">—</strong></div>
+                </div>
+                <div class="pv-group pv-calculado">
+                  <div class="row2"><span>🏷️ Precio calculado con IVA</span><strong id="pv_o_base">—</strong></div>
+                </div>
+                <div class="pv-group pv-sugerido">
+                  <div class="row2"><span>✨ Precio comercial sugerido (terminación $900)</span><strong id="pv_o_sugerido">—</strong></div>
+                </div>
+                <div class="pv-group pv-evaluado">
+                  <div class="row2"><span>📌 Precio evaluado con IVA</span><strong id="pv_o_pbruto">—</strong></div>
+                  <div class="row2"><span>🏷️ Precio evaluado sin IVA</span><strong id="pv_o_pneto">—</strong></div>
+                  <div class="row2"><span>🧾 IVA de la venta evaluada</span><strong id="pv_o_ivav">—</strong></div>
+                  <div class="row2"><span>📈 Utilidad bruta sin IVA (antes de gastos)</span><strong class="ok" id="pv_o_util">—</strong></div>
+                </div>
+                <div class="pv-group pv-margenes">
+                  <div class="row2"><span>Markup real (utilidad neta de IVA / costo neto)</span><strong id="pv_o_markup">—</strong></div>
+                  <div class="row2"><span>Margen real (utilidad neta de IVA / venta neta)</span><strong id="pv_o_margen">—</strong></div>
+                  <div class="row2"><span>Margen del precio sugerido</span><strong id="pv_o_margen_sugerido">—</strong></div>
+                </div>
+              </div>
+              <p class="sub" style="margin-top:12px">La utilidad mostrada excluye IVA y no descuenta comisiones, gastos del local ni otros costos. Se supone que el IVA de compra es recuperable como crédito fiscal.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CALC: MARGEN DE GANANCIA -->
+        <div id="view-margen" class="hidden">
+          <button class="back" data-back>← Volver al menú</button>
+          <h2>Calculadora de Margen de Ganancia</h2>
+          <p class="sub">Puedes ingresar el <b>precio de compra con IVA o sin IVA</b>. Para la venta, ingresa directamente el <b>precio de venta con IVA</b>.</p>
+          <div class="section">
+            <div class="grid">
+              <div><label>Precio de compra sin IVA (opcional)</label><input id="mg_compra_n_input" type="text" inputmode="numeric" placeholder="Ej: 10.000"></div>
+              <div><label>Precio de compra con IVA (opcional)</label><input id="mg_compra" type="text" inputmode="numeric" placeholder="Ej: 11.900"></div>
+              <div><label>Precio de venta con IVA</label><input id="mg_venta" type="text" inputmode="numeric" placeholder="Ej: 19.900"></div>
+              <button class="primary" id="mg_calc" onclick="calcularMargen()">Calcular</button>
+            </div>
+          </div>
+          <div class="section out" id="mg_out" style="display:none">
+            <div id="mg_eval" style="margin-bottom:14px;padding:16px 18px;border:1px solid #344152;border-radius:14px;background:#0e141c">
+              <div style="display:flex;justify-content:space-between;gap:14px;align-items:center">
+                <strong style="font-size:17px">📊 Evaluación comercial</strong>
+                <strong id="mg_badge" style="padding:7px 11px;border-radius:999px">—</strong>
+              </div>
+              <div id="mg_text" style="margin-top:8px;color:#aeb8c7;font-size:13px;line-height:1.45">—</div>
+            </div>
+            <div class="table">
+              <div class="row2"><span>💳 Precio de compra con IVA</span><strong id="mg_compra_b">—</strong></div>
+              <div class="row2"><span>💰 Costo neto sin IVA</span><strong id="mg_compra_n">—</strong></div>
+              <div class="row2"><span>🧾 IVA del costo</span><strong id="mg_iva_c">—</strong></div>
+              <div class="row2 destacado"><span>🏷️ Precio de venta con IVA</span><strong id="mg_venta_b">—</strong></div>
+              <div class="row2"><span>🏷️ Precio de venta neto</span><strong id="mg_venta_n">—</strong></div>
+              <div class="row2"><span>🧾 IVA de la venta</span><strong id="mg_iva_v">—</strong></div>
+              <div class="row2"><span>📈 Utilidad bruta</span><strong id="mg_util">—</strong></div>
+              <div class="row2"><span>Markup (utilidad / costo c/IVA)</span><strong id="mg_markup">—</strong></div>
+              <div class="row2"><span>Margen (utilidad / precio c/IVA)</span><strong id="mg_margen">—</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CALC: IVA MENSUAL -->
+        <div id="view-iva" class="hidden">
+          <button class="back" data-back>← Volver al menú</button>
+          <h2>Calculadora de IVA Mensual (Chile 19%)</h2>
+          <p class="sub">Escribe los <b>totales del mes</b>. Acepta <b>Neto</b> o <b>Total con IVA</b>. Los puntos de miles se aplican automáticamente.</p>
+          <div class="grid">
+            <div class="section">
+              <h3>Ventas</h3>
+              <div class="row"><label>Boletas (afectas)</label><input id="iva_vBoleta" type="text" inputmode="numeric" placeholder="1.200.000"><select id="iva_vBoletaBase"><option>Neto</option><option selected>Total con IVA</option></select></div>
+              <div class="row" style="margin-top:10px"><label>Facturas de venta (afectas)</label><input id="iva_vFactura" type="text" inputmode="numeric" placeholder="800.000"><select id="iva_vFacturaBase"><option>Neto</option><option selected>Total con IVA</option></select></div>
+              <div class="row" style="margin-top:10px"><label>Ventas exentas (total)</label><input id="iva_vExentas" type="text" inputmode="numeric" placeholder="0"><div></div></div>
+              <div class="row" style="margin-top:10px"><label>Notas de crédito de ventas</label><input id="iva_ncVentas" type="text" inputmode="numeric" placeholder="Total o neto"><select id="iva_ncVentasBase"><option>Neto</option><option selected>Total con IVA</option></select></div>
+            </div>
+            <div class="section">
+              <h3>Compras</h3>
+              <div class="row"><label>Compras afectas (con crédito)</label><input id="iva_cAfectas" type="text" inputmode="numeric" placeholder="500.000"><select id="iva_cAfectasBase"><option>Neto</option><option selected>Total con IVA</option></select></div>
+              <div class="row" style="margin-top:10px"><label>Compras exentas (total)</label><input id="iva_cExentas" type="text" inputmode="numeric" placeholder="0"><div></div></div>
+              <div class="row" style="margin-top:10px"><label>Compras sin derecho a crédito</label><input id="iva_cNoCred" type="text" inputmode="numeric" placeholder="0"><select id="iva_cNoCredBase"><option>Neto</option><option selected>Total con IVA</option></select></div>
+              <div class="row" style="margin-top:10px"><label>Notas de crédito de compras</label><input id="iva_ncCompras" type="text" inputmode="numeric" placeholder="Total o neto"><select id="iva_ncComprasBase"><option>Neto</option><option selected>Total con IVA</option></select></div>
+            </div>
+          </div>
+          <div class="out">
+            <button class="primary" id="iva_calcular">Calcular IVA</button>
+            <div class="table" id="iva_out" style="display:none;margin-top:10px">
+              <div class="row2"><span>IVA Débito (ventas afectas)</span><strong id="iva_o_debito">—</strong></div>
+              <div class="row2"><span>IVA Crédito utilizable</span><strong id="iva_o_credito">—</strong></div>
+              <div class="row2 destacado"><span>IVA a pagar</span><strong id="iva_o_pagar">—</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CALC: REINVERSIÓN -->
+        <div id="view-reinv" class="hidden">
+          <button class="back" data-back>← Volver al menú</button>
+          <h2>Gasto del Negocio (Costo del Mes)</h2>
+          <p class="sub">Usa tus <b>ventas del mes</b> y tu <b>% de ganancia (markup sobre costo con IVA)</b> para estimar el <b>costo real del mes</b>.</p>
+          <div class="grid">
+            <div class="section">
+              <div class="row"><label>Vendido en el mes (con IVA)</label><input id="re_vendido" type="text" inputmode="numeric" placeholder="4.000.000"><div></div></div>
+              <div class="row" style="margin-top:10px"><label>% de ganancia sobre costo con IVA (markup)</label><input id="re_pct" type="number" value="170" min="0" step="0.1"><div></div></div>
+              <div class="row" style="margin-top:10px;grid-template-columns:220px 1fr 160px"><label>% IVA de compras (para crédito)</label><input id="re_ivacomp" type="number" value="19" min="0" step="0.1"><button class="primary" id="re_calc">Calcular</button></div>
+            </div>
+            <div class="section out" id="re_panel" style="display:none">
+              <div class="table">
+                <div class="row2"><span>Vendido (con IVA)</span><strong id="re_o_vendido">—</strong></div>
+                <div class="row2"><span>% ganancia (markup)</span><strong id="re_o_markup">—</strong></div>
+                <div class="row2 destacado"><span>📄 <b>Gasto del mes (costo con IVA)</b></span><strong id="re_o_gasto">—</strong></div>
+                <div class="row2"><span>Costo sin IVA (referencia)</span><strong id="re_o_costoneto">—</strong></div>
+                <div class="row2"><span>Utilidad bruta estimada</span><strong id="re_o_utilidad">—</strong></div>
+                <div class="row2"><span>Margen efectivo sobre ventas</span><strong id="re_o_margen">—</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const IVA = 0.19; const $ = id => document.getElementById(id);
+  const CL = new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0});
+  const NF0 = new Intl.NumberFormat('es-CL',{maximumFractionDigits:0});
+  function digits(v){return String(v||'').replace(/\D/g,'');}
+  function maskCLP(el){el.addEventListener('input',()=>{const d=digits(el.value);el.value=d?NF0.format(parseInt(d,10)):''});}
+  function nCLP(v){const d=digits(v);return d?parseInt(d,10):0;}
+  function fmt(n){return CL.format(Math.round(n));}
+
+  // Ajuste automático de altura dentro de Streamlit
+  function ajustarAltura(){
+    setTimeout(()=>{
+      const altura = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        500
+      );
+      window.parent.postMessage({
+        isStreamlitMessage: true,
+        type: "streamlit:setFrameHeight",
+        height: altura + 30
+      }, "*");
+    }, 40);
+  }
+
+  if (typeof ResizeObserver !== "undefined") {
+    const observer = new ResizeObserver(ajustarAltura);
+    observer.observe(document.body);
+  }
+  window.addEventListener("load", ajustarAltura);
+
+  // Router robusto
+  const views={pv:'view-pv',iva:'view-iva',reinv:'view-reinv',margen:'view-margen'};
+  function hideAll(){
+    Object.values(views).forEach(id=>{
+      const el=$(id);
+      if(el) el.classList.add('hidden');
+    });
+  }
+  function show(key){
+    const targetId=views[key];
+    const target=$(targetId);
+    if(!target){ alert('Vista no disponible: '+key); return; }
+    $('menu').classList.add('hidden');
+    hideAll();
+    target.classList.remove('hidden');
+  }
+  document.querySelectorAll('.tile').forEach(t=>{
+    t.addEventListener('click',()=>show(t.dataset.go));
+  });
+  document.querySelectorAll('[data-back]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      hideAll();
+      $('menu').classList.remove('hidden');
+    });
+  });
+
+  // Máscaras CLP
+  ['pv_neto','pv_bruto','iva_vBoleta','iva_vFactura','iva_vExentas','iva_ncVentas','iva_cAfectas','iva_cExentas','iva_cNoCred','iva_ncCompras','re_vendido','mg_compra_n_input','mg_compra','mg_venta']
+    .forEach(id=>{const el=$(id); if(el) maskCLP(el);});
+
+  // PRECIO DE VENTA — markup o margen, con evaluación de precio comercial
+  function pv_calc(){
+    let neto=nCLP($('pv_neto').value);
+    let bruto=nCLP($('pv_bruto').value);
+    const pct=Number($('pv_pct').value);
+    const modo=$('pv_modo').value;
+    const manual=nCLP($('pv_manual').value);
+    if(!Number.isFinite(pct)||pct<0||(modo==='margen'&&pct>=100)){
+      alert('Ingresa un porcentaje válido. El margen debe ser menor que 100%.');return;
+    }
+    if(bruto<=0&&neto<=0){alert('Ingresa un costo positivo sin IVA o con IVA');return;}
+    if(bruto>0){neto=bruto/(1+IVA);}else{bruto=neto*(1+IVA);}
+    const base=modo==='margen' ? bruto/(1-pct/100) : bruto*(1+pct/100);
+    // Regla MOBIX: de $X.000 a $X.500, $X-1.900; desde $X.501, $X.900.
+    const tramo=Math.floor(Math.round(base)/1000);
+    const resto=Math.round(base)-tramo*1000;
+    const sugerido=Math.max(900,(resto<=500 ? tramo-1 : tramo)*1000+900);
+    const precio=manual>0 ? manual : sugerido;
+    const ventaNeta=precio/(1+IVA);
+    const utilidad=ventaNeta-neto;
+    const markup=utilidad/neto;
+    const margen=utilidad/ventaNeta;
+    const margenSugerido=(sugerido/(1+IVA)-neto)/(sugerido/(1+IVA));
+    const formatoPct=x=>new Intl.NumberFormat('es-CL',{style:'percent',minimumFractionDigits:1,maximumFractionDigits:1}).format(x);
+    $('pv_o_neto').textContent=fmt(neto);
+    $('pv_o_ivac').textContent=fmt(bruto-neto);
+    $('pv_o_bruto').textContent=fmt(bruto);
+    $('pv_o_base').textContent=fmt(base);
+    $('pv_o_sugerido').textContent=fmt(sugerido);
+    $('pv_o_pbruto').textContent=fmt(precio)+(manual>0?' (manual)':' (sugerido)');
+    $('pv_o_pneto').textContent=fmt(ventaNeta);
+    $('pv_o_ivav').textContent=fmt(precio-ventaNeta);
+    $('pv_o_util').textContent=fmt(utilidad);
+    $('pv_o_markup').textContent=formatoPct(markup);
+    $('pv_o_margen').textContent=formatoPct(margen);
+    $('pv_o_margen_sugerido').textContent=formatoPct(margenSugerido);
+    const evalBox=$('pv_eval'),evalBadge=$('pv_eval_badge'),evalText=$('pv_eval_text');
+    if(margen>=0.50){
+      evalBox.style.borderColor='#1f9d68';evalBox.style.background='rgba(31,157,104,.10)';
+      evalBadge.style.color='#42e59a';evalBadge.textContent='MARGEN ALTO';
+      evalText.textContent='Margen bruto alto antes de comisiones, descuentos, garantías, mermas y gastos del local.';
+    }else if(margen>=0.30){
+      evalBox.style.borderColor='#d99a19';evalBox.style.background='rgba(217,154,25,.10)';
+      evalBadge.style.color='#ffc44d';evalBadge.textContent='MARGEN INTERMEDIO';
+      evalText.textContent='Margen bruto intermedio. Considera comisiones, garantías y gastos del local.';
+    }else{
+      evalBox.style.borderColor='#d84b5b';evalBox.style.background='rgba(216,75,91,.10)';
+      evalBadge.style.color='#ff7180';evalBadge.textContent='MARGEN BAJO';
+      evalText.textContent='Margen bruto bajo o negativo. Revisa el precio de venta y tus costos.';
+    }
+    $('pv_out').style.display='block';
+    ajustarAltura();
+  }
+  $('pv_calc').addEventListener('click',pv_calc);
+  $('pv_modo').addEventListener('change',()=>{
+    $('pv_pct_label').textContent=$('pv_modo').value==='margen'?'Margen deseado (%)':'Ganancia sobre costo (%)';
+  });
+
+  // IVA Mensual
+  function toNeto(monto, base){ return base==='Neto' ? monto : monto/(1+IVA); }
+
+  function iva_calc(){
+    const vBoleta  = toNeto(nCLP($('iva_vBoleta').value),  $('iva_vBoletaBase').value);
+    const vFactura = toNeto(nCLP($('iva_vFactura').value), $('iva_vFacturaBase').value);
+    const vExentas = nCLP($('iva_vExentas').value);
+    const ncVentas = toNeto(nCLP($('iva_ncVentas').value), $('iva_ncVentasBase').value);
+    const cAfectas = toNeto(nCLP($('iva_cAfectas').value), $('iva_cAfectasBase').value);
+    const cExentas = nCLP($('iva_cExentas').value);
+    const cNoCred  = nCLP($('iva_cNoCred').value);
+    const ncCompras= toNeto(nCLP($('iva_ncCompras').value), $('iva_ncComprasBase').value);
+
+    const ventasAfectasNeto  = Math.max(0, vBoleta + vFactura - ncVentas);
+    const comprasAfectasNeto = Math.max(0, cAfectas - ncCompras);
+    const ivaDeb  = ventasAfectasNeto * IVA;
+    const ivaCred = comprasAfectasNeto * IVA;
+    const ivaPagar= ivaDeb - ivaCred;
+
+    $('iva_o_debito').textContent = fmt(ivaDeb);
+    $('iva_o_credito').textContent = fmt(ivaCred);
+    $('iva_o_pagar').textContent = fmt(ivaPagar);
+    $('iva_out').style.display='block';
+  }
+  $('iva_calcular').addEventListener('click', iva_calc);
+
+  // REINVERSIÓN
+  function re_calc(){
+    const vendido=nCLP($('re_vendido').value);
+    const pct=Number($('re_pct').value||0)/100;
+    const ivaCompras=Number($('re_ivacomp').value||19)/100;
+    if(!vendido){alert('Ingresa el total vendido del mes (con IVA)');return;}
+    const gastoConIVA=vendido/(1+pct);
+    const costoNeto=gastoConIVA/(1+ivaCompras);
+    const utilidad=vendido-gastoConIVA;
+    const margen=utilidad/vendido;
+    $('re_o_vendido').textContent=fmt(vendido);
+    $('re_o_markup').textContent=new Intl.NumberFormat('es-CL',{style:'percent',minimumFractionDigits:1}).format(pct);
+    $('re_o_gasto').textContent=fmt(gastoConIVA);
+    $('re_o_costoneto').textContent=fmt(costoNeto);
+    $('re_o_utilidad').textContent=fmt(utilidad);
+    $('re_o_margen').textContent=new Intl.NumberFormat('es-CL',{style:'percent',minimumFractionDigits:1}).format(margen);
+    $('re_panel').style.display='block';
+  }
+  $('re_calc').addEventListener('click',re_calc);
+})();
+  function calcularMargen(){
+    function num(id){
+      var el=document.getElementById(id);
+      if(!el || !el.value.trim()) return NaN;
+      var x=el.value.toString().replace(/\$/g,'').replace(/\s/g,'').replace(/\./g,'').replace(/,/g,'.');
+      return Number(x);
+    }
+    function clp(n){ return '$'+Math.round(n).toLocaleString('es-CL'); }
+    function pct(n){ return (n*100).toLocaleString('es-CL',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'; }
+
+    var IVA=0.19;
+    var compraSin=num('mg_compra_n_input'), compraCon=num('mg_compra');
+    var ventaCon=num('mg_venta');
+
+    if(!isFinite(compraSin) && !isFinite(compraCon)){ alert('Ingresa el precio de compra con IVA o sin IVA.'); return; }
+    if(!isFinite(ventaCon)){ alert('Ingresa el precio de venta con IVA.'); return; }
+
+    // Si se llenan ambas opciones, se prioriza "con IVA".
+    var compra = isFinite(compraCon) ? compraCon : compraSin*(1+IVA);
+    var venta = ventaCon;
+    if(compra<=0 || venta<=0){ alert('Los precios deben ser mayores a cero.'); return; }
+
+    var compraN=compra/(1+IVA), ivaC=compra-compraN;
+    var ventaN=venta/(1+IVA), ivaV=venta-ventaN;
+    var utilidad=venta-compra;
+    var markup=utilidad/compra;
+    var margen=utilidad/venta;
+
+    document.getElementById('mg_compra_b').textContent=clp(compra);
+    document.getElementById('mg_compra_n').textContent=clp(compraN);
+    document.getElementById('mg_iva_c').textContent=clp(ivaC);
+    document.getElementById('mg_venta_b').textContent=clp(venta);
+    document.getElementById('mg_venta_n').textContent=clp(ventaN);
+    document.getElementById('mg_iva_v').textContent=clp(ivaV);
+    document.getElementById('mg_util').textContent=clp(utilidad);
+    document.getElementById('mg_markup').textContent=pct(markup);
+    document.getElementById('mg_margen').textContent=pct(margen);
+
+    var box=document.getElementById('mg_eval'), badge=document.getElementById('mg_badge'), text=document.getElementById('mg_text');
+    if(margen>=0.50){
+      box.style.borderColor='#1f9d68'; box.style.background='rgba(31,157,104,.10)';
+      badge.style.color='#42e59a'; badge.textContent='MARGEN ALTO';
+      text.textContent='Buen margen bruto para accesorios/electrónica. Hay mayor espacio para cubrir comisiones, descuentos, garantías, mermas y gastos del local. No representa la utilidad neta final.';
+    }else if(margen>=0.30){
+      box.style.borderColor='#d99a19'; box.style.background='rgba(217,154,25,.10)';
+      badge.style.color='#ffc44d'; badge.textContent='MARGEN INTERMEDIO';
+      text.textContent='Margen bruto intermedio. Conviene considerar comisiones, garantías, descuentos y gastos del local antes de evaluar la ganancia final.';
+    }else{
+      box.style.borderColor='#d84b5b'; box.style.background='rgba(216,75,91,.10)';
+      badge.style.color='#ff7180'; badge.textContent=margen<0?'PÉRDIDA':'MARGEN BAJO';
+      text.textContent=margen<0?'El precio de venta es menor que el precio de compra: existe una pérdida bruta.':'Margen bruto bajo. Los gastos operacionales pueden reducir bastante la ganancia real; conviene revisar el costo o el precio.';
+    }
+    document.getElementById('mg_out').style.display='block';
+    document.getElementById('mg_out').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+
+</script>
+</body>
+</html>
